@@ -1,1 +1,106 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>App support</title><main><h1>App support</h1><ul><li><a href="support/?app=time-farm">Time Farm</a></li><li><a href="support/?app=habit-streaks">Habit Streaks</a></li></ul></main></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Support</title>
+<meta name="description" content="Report a bug, request a feature or contact the developer of Time Farm and Habit Streaks.">
+<link rel="stylesheet" href="assets/support.css">
+<script>
+  // Theme the page before first paint, so the right colors and FAQ show at once.
+  (function (params) {
+    var app = params.get('app');
+    if (app === 'time-farm' || app === 'habit-streaks') document.documentElement.dataset.app = app;
+  })(new URLSearchParams(location.search));
+</script>
+</head>
+<body>
+<main>
+  <header class="brand">
+    <img id="app-icon" alt="" width="56" height="56">
+    <div>
+      <p id="app-name">Productive Lab</p>
+      <h1>How can we help?</h1>
+    </div>
+  </header>
+
+  <form id="feedback-form" class="card" novalidate>
+    <fieldset id="feedback-fields">
+      <div id="app-picker" class="field" hidden>
+        <span class="label" id="app-picker-label">App</span>
+        <div class="seg" role="radiogroup" aria-labelledby="app-picker-label">
+          <input type="radio" name="appChoice" id="app-time-farm" value="time-farm"><label for="app-time-farm">Time Farm</label>
+          <input type="radio" name="appChoice" id="app-habit-streaks" value="habit-streaks"><label for="app-habit-streaks">Habit Streaks</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="seg" role="radiogroup" aria-label="Type of message">
+          <input type="radio" name="type" id="type-bug" value="bug" checked><label for="type-bug">Bug</label>
+          <input type="radio" name="type" id="type-feature" value="feature"><label for="type-feature">Feature</label>
+          <input type="radio" name="type" id="type-other" value="other"><label for="type-other">Other</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="feedback-message" id="message-label">What went wrong?</label>
+        <textarea id="feedback-message" name="message" minlength="10" maxlength="3000" required
+          placeholder="What happened and what did you expect? Your app version and device help too."></textarea>
+      </div>
+
+      <div class="field">
+        <label class="label" for="feedback-email">Email for a reply <span class="optional">(optional)</span></label>
+        <input id="feedback-email" name="replyEmail" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com">
+      </div>
+
+      <div class="trap" aria-hidden="true"><label for="feedback-website">Leave this field empty</label><input id="feedback-website" name="website" tabindex="-1" autocomplete="off"></div>
+
+      <button id="feedback-submit" class="submit" type="submit" disabled>Send report</button>
+      <p class="note">No account needed. <a href="privacy.html">How we handle feedback</a></p>
+      <p id="feedback-status" class="status" role="status" aria-live="polite"></p>
+    </fieldset>
+
+    <div id="feedback-done" class="done" hidden tabindex="-1">
+      <span class="check" aria-hidden="true">✓</span>
+      <h2>Thanks, message sent</h2>
+      <p>If you left an email, we’ll reply there.</p>
+      <button id="feedback-again" class="link-button" type="button">Send another</button>
+    </div>
+
+    <noscript><p>The form needs JavaScript. You can email <a href="mailto:guchenko.n@gmail.com">guchenko.n@gmail.com</a> instead.</p></noscript>
+  </form>
+
+  <section data-time-farm-only aria-labelledby="faq-title">
+    <h2 id="faq-title">Common questions</h2>
+    <details>
+      <summary>Pro doesn’t show up after purchase</summary>
+      <p>Open the Pro screen and tap Restore purchases with the Apple account you bought it with. Subscriptions are managed in iOS Settings → your name → Subscriptions.</p>
+    </details>
+    <details>
+      <summary>A reward is waiting to sync</summary>
+      <p>Stay signed in to the same account, go online and tap Retry on the focus screen. The reward is kept on this device until it syncs, so don’t delete the app meanwhile.</p>
+    </details>
+    <details>
+      <summary>How do I delete my account?</summary>
+      <p>Use account settings in the app. Deleting the account doesn’t cancel an Apple subscription.</p>
+    </details>
+    <details>
+      <summary>Reminders and notifications</summary>
+      <p>Turn focus reminders on or off in account settings. Notification permission is in iOS Settings → Notifications → Time Farm.</p>
+    </details>
+    <details>
+      <summary>Access or delete my data</summary>
+      <p>Email us from your account address. Details are in the <a href="time-farm/policy/">privacy policy</a>.</p>
+    </details>
+  </section>
+
+  <footer>
+    <a data-contact href="mailto:guchenko.n@gmail.com">guchenko.n@gmail.com</a>
+    <a href="privacy.html">Feedback privacy</a>
+    <a data-time-farm-only href="time-farm/policy/">Time Farm privacy policy</a>
+  </footer>
+</main>
+<script src="assets/config.js"></script>
+<script src="assets/feedback.js"></script>
+</body>
+</html>

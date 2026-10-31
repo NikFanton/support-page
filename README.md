@@ -1,9 +1,10 @@
 # Shared app support
 
-GitHub Pages source: `main` / `docs`.
+GitHub Pages source: `main` / `docs`, custom domain `support.productive-lab.com`.
 
-- [Time Farm](https://nikfanton.github.io/support-page/support/?app=time-farm)
-- [Habit Streaks](https://nikfanton.github.io/support-page/support/?app=habit-streaks)
+- [Time Farm](https://support.productive-lab.com/?app=time-farm)
+- [Habit Streaks](https://support.productive-lab.com/?app=habit-streaks)
+- Request a feature: add `&type=feature` (also `bug`, the default, or `other`).
 
 Backend and deployment instructions: [apps-script/README.md](apps-script/README.md).
 

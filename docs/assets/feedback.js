@@ -6,6 +6,15 @@
 })(typeof window !== 'undefined' ? window : globalThis, function () {
   'use strict';
   var channel = 'app-feedback-v1';
+  var types = ['bug', 'feature', 'other'];
+  var copy = {
+    bug: {label: 'What went wrong?', submit: 'Send report',
+      placeholder: 'What happened and what did you expect? Your app version and device help too.'},
+    feature: {label: 'What would you like to see?', submit: 'Send request',
+      placeholder: 'Describe the feature and how you would use it.'},
+    other: {label: 'Your message', submit: 'Send message',
+      placeholder: 'Questions, thoughts, anything else.'},
+  };
   function validEndpoint(value) {
     return /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(value || '');
   }
@@ -23,49 +32,84 @@
       data.requestId === requestId && /^[a-f0-9]{48}$/.test(requestId) &&
       ['sent', 'rejected', 'unconfirmed'].indexOf(data.status) !== -1 ? data : null;
   }
+  // Only allowlisted app IDs are used; anything else falls back to the app picker.
+  function appFromQuery(search, apps) {
+    var id = new URLSearchParams(search).get('app');
+    return id && Object.prototype.hasOwnProperty.call(apps || {}, id) ? id : null;
+  }
+  function typeFromQuery(search) {
+    var type = new URLSearchParams(search).get('type');
+    return types.indexOf(type) >= 0 ? type : 'bug';
+  }
   function mount(win) {
     var doc = win.document;
     var form = doc && doc.getElementById('feedback-form');
     if (!form) return;
+    var config = win.TIME_FARM_CONFIG || {};
+    var apps = config.apps || {};
     var status = doc.getElementById('feedback-status');
     var submit = doc.getElementById('feedback-submit');
     var fields = doc.getElementById('feedback-fields');
-    var endpoint = (win.TIME_FARM_CONFIG || {}).feedbackEndpoint || '';
-    var params = new URLSearchParams(win.location.search);
-    var appId = params.get('app') || 'time-farm';
-    var app = ((win.TIME_FARM_CONFIG || {}).apps || {})[appId];
-    if (!app || !Object.prototype.hasOwnProperty.call((win.TIME_FARM_CONFIG || {}).apps || {}, appId)) {
-      submit.disabled = true;
-      status.textContent = 'The selected app is not supported by this form. Please email support.';
-      return;
-    }
-    doc.title = app.name + ' — Support';
-    doc.getElementById('app-title').textContent = app.name + ' support';
-    doc.getElementById('app-footer').textContent = app.name;
-    doc.documentElement.style.setProperty('--accent', app.accent);
-    doc.documentElement.style.setProperty('--background', app.background);
-    doc.getElementById('time-farm-help').hidden = appId !== 'time-farm';
-    doc.querySelectorAll('[data-time-farm-only]').forEach(function (element) { element.hidden = appId !== 'time-farm'; });
-    doc.querySelectorAll('[data-contact]').forEach(function (element) {
-      element.href = 'mailto:guchenko.n@gmail.com?subject=' + encodeURIComponent(app.name + ' feedback');
-    });
-    var type = form.elements.type;
-    var prefill = new URLSearchParams(win.location.search).get('type');
-    if (['feature', 'bug', 'other'].indexOf(prefill) >= 0) type.value = prefill;
+    var done = doc.getElementById('feedback-done');
+    var message = form.elements.message;
+    var endpoint = config.feedbackEndpoint || '';
+    var appId = appFromQuery(win.location.search, apps);
+    var initialType = typeFromQuery(win.location.search);
     var pending = null;
     var timer = null;
     var frame = null;
     var post = null;
     var sending = false;
-    function notice(message, success) {
-      status.textContent = message;
-      status.className = success ? 'status success' : 'status';
+
+    function applyApp(id) {
+      appId = id;
+      var app = apps[id];
+      doc.documentElement.dataset.app = id;
+      doc.title = app.name + ' Support';
+      doc.getElementById('app-name').textContent = app.name;
+      var icon = doc.getElementById('app-icon');
+      icon.src = app.icon;
+      doc.querySelectorAll('[data-contact]').forEach(function (element) {
+        element.href = 'mailto:guchenko.n@gmail.com?subject=' + encodeURIComponent(app.name + ' support');
+      });
     }
+    function applyType() {
+      var text = copy[form.elements.type.value] || copy.bug;
+      doc.getElementById('message-label').textContent = text.label;
+      message.placeholder = text.placeholder;
+      if (!sending) submit.textContent = text.submit;
+    }
+    function notice(text, error) {
+      status.textContent = text;
+      status.className = error ? 'status error' : 'status';
+    }
+
+    if (appId) applyApp(appId);
+    else {
+      // Shared entry without ?app=: ask which app the message is about.
+      var picker = doc.getElementById('app-picker');
+      picker.hidden = false;
+      Array.prototype.forEach.call(form.elements.appChoice, function (radio) {
+        radio.required = true;
+        radio.addEventListener('change', function () {
+          applyApp(radio.value);
+          var params = new URLSearchParams(win.location.search);
+          params.set('app', radio.value);
+          win.history.replaceState(null, '', '?' + params.toString());
+        });
+      });
+    }
+    form.elements.type.value = initialType;
+    applyType();
+    Array.prototype.forEach.call(form.elements.type, function (radio) {
+      radio.addEventListener('change', applyType);
+    });
+
     function finishWaiting() {
       win.clearTimeout(timer);
       sending = false;
       fields.disabled = false;
-      submit.textContent = 'Send feedback';
+      applyType();
     }
     function cleanupTransport() {
       if (frame) frame.remove();
@@ -74,11 +118,15 @@
     }
     if (!validEndpoint(endpoint)) {
       submit.disabled = true;
-      notice('The online form is not available yet. Please use the email link below.');
+      notice('The form is offline right now. Please email us instead.', true);
       return;
     }
     submit.disabled = false;
-    notice('Your message goes to the ' + app.name + ' developer. No Google sign-in is needed.');
+    doc.getElementById('feedback-again').addEventListener('click', function () {
+      done.hidden = true;
+      fields.hidden = false;
+      message.focus();
+    });
     form.addEventListener('input', function () {
       if (!sending && pending) { pending = null; cleanupTransport(); }
     });
@@ -88,35 +136,43 @@
       if (!ack) return;
       finishWaiting();
       if (ack.status === 'sent') {
-        notice('Thank you — your feedback was sent to the ' + app.name + ' developer.', true);
+        var type = form.elements.type.value;
         form.reset();
+        form.elements.type.value = type;
+        if (appId && form.elements.appChoice) form.elements.appChoice.value = appId;
+        applyType();
+        notice('');
         pending = null;
         cleanupTransport();
+        fields.hidden = true;
+        done.hidden = false;
+        done.focus();
       } else {
         var messages = {
-          invalid: 'Please check the message and optional reply email, then try again.',
-          quota: 'The form has reached its sending limit. Please email support instead.',
+          invalid: 'Please check your message and email, then try again.',
+          quota: 'The form is busy today. Please email us instead.',
           busy: 'The form is busy. Please try again in a moment.',
-          unavailable: 'The online form is unavailable. Please email support instead.',
+          unavailable: 'The form is unavailable. Please email us instead.',
           conflict: 'Please edit your message and try again.',
         };
-        notice(messages[ack.code] || 'We could not confirm delivery. Your text is still here. Retry to check the same request, or email support.');
+        notice(messages[ack.code] || 'We couldn’t confirm delivery. Your text is still here — try again or email us.', true);
       }
     });
     form.addEventListener('submit', function (event) {
       event.preventDefault();
       if (sending || !form.reportValidity()) return;
-      var values = {app: appId, type: type.value, message: form.elements.message.value.trim(),
+      if (!appId) { notice('Choose an app first.', true); return; }
+      var values = {app: appId, type: form.elements.type.value, message: message.value.trim(),
         replyEmail: form.elements.replyEmail.value.trim(), website: form.elements.website.value,
         origin: win.location.origin};
       if (values.message.length < 10 || values.message.length > 3000) {
-        notice('Please write between 10 and 3,000 characters.'); return;
+        notice('Please write between 10 and 3,000 characters.', true); return;
       }
       var fingerprint = JSON.stringify(values);
       if (!pending || pending.fingerprint !== fingerprint) {
         var bytes = new Uint8Array(24);
         if (!win.crypto || !win.crypto.getRandomValues) {
-          notice('The form cannot be sent in this browser. Please email support.'); return;
+          notice('This browser can’t send the form. Please email us instead.', true); return;
         }
         win.crypto.getRandomValues(bytes);
         pending = {id: Array.from(bytes, function (value) { return value.toString(16).padStart(2, '0'); }).join(''), fingerprint: fingerprint};
@@ -138,10 +194,10 @@
       sending = true;
       fields.disabled = true;
       submit.textContent = 'Sending…';
-      notice('Sending your feedback…');
+      notice('');
       timer = win.setTimeout(function () {
         finishWaiting();
-        notice('We have not received confirmation yet. Your text is safe. Retry to check delivery, or email support.');
+        notice('No confirmation yet. Your text is safe — try again to check, or email us.', true);
       }, 25000);
       // A normal HTML form POST supports cross-origin submission. Never use
       // fetch(mode:no-cors): an opaque response cannot confirm email delivery.
@@ -149,5 +205,5 @@
     });
   }
   return {validEndpoint: validEndpoint, trustedGoogleOrigin: trustedGoogleOrigin,
-    acceptedAck: acceptedAck, mount: mount};
+    acceptedAck: acceptedAck, appFromQuery: appFromQuery, typeFromQuery: typeFromQuery, mount: mount};
 });

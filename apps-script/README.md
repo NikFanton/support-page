@@ -6,10 +6,10 @@ GitHub Pages is published from `main` → `/docs`. Apps Script version 1 is depl
 
 Canonical Pages URL after publishing this package in `NikFanton/support-page`:
 
-- `https://nikfanton.github.io/support-page/support/?app=time-farm`
-- `https://nikfanton.github.io/support-page/support/?app=habit-streaks&type=feature`
+- `https://support.productive-lab.com/?app=time-farm`
+- `https://support.productive-lab.com/?app=habit-streaks&type=feature`
 
-`/time-farm/support/` remains a backwards-compatible redirect. One shared renderer lives under `/support/`; assets and the app allowlist live under `/assets/`. Unknown app IDs are rejected on the server. The recipient is fixed to **guchenko.n@gmail.com**; callers cannot choose recipients or email subjects.
+`/support/` and `/time-farm/support/` remain backwards-compatible redirects. One shared renderer lives at the site root; assets and the app allowlist live under `/assets/`. Unknown app IDs are rejected on the server. The recipient is fixed to **guchenko.n@gmail.com**; callers cannot choose recipients or email subjects.
 
 ## Publish
 

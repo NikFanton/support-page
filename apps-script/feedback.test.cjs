@@ -70,3 +70,11 @@ test('client validates endpoint, ACK origin, channel and exact pending ID', () =
   assert.equal(client.acceptedAck(e,'b'.repeat(48)),null);
   assert.equal(client.acceptedAck({...e,data:{...e.data,channel:'wrong'}},'a'.repeat(48)),null);
 });
+test('client deep links: allowlisted app only, type defaults to bug', () => {
+  const apps = {'time-farm': {}, 'habit-streaks': {}};
+  assert.equal(client.appFromQuery('?app=habit-streaks&type=feature', apps), 'habit-streaks');
+  for (const search of ['', '?app=other', '?app=toString', '?app=__proto__']) assert.equal(client.appFromQuery(search, apps), null);
+  assert.equal(client.typeFromQuery('?app=habit-streaks&type=feature'), 'feature');
+  assert.equal(client.typeFromQuery('?type=other'), 'other');
+  for (const search of ['', '?type=FEATURE', '?type=spam']) assert.equal(client.typeFromQuery(search), 'bug');
+});

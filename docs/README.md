@@ -2,10 +2,12 @@
 
 GitHub Pages source: `main` branch, `/docs` directory. No build step.
 
-- `/support/?app=time-farm`
-- `/support/?app=habit-streaks`
-- Add `&type=feature` to preselect a feature suggestion.
-- `/time-farm/support/` redirects to the shared form.
-- `/time-farm/policy/` contains the supplied Time Farm privacy policy.
+- `/?app=time-farm` and `/?app=habit-streaks` open the form for that app. Without `app` the page asks which app.
+- `&type=feature` preselects Feature; `bug` (default) and `other` work the same way.
+- `/support/` and `/time-farm/support/` redirect to the form, keeping the query.
+- `/privacy.html` is the feedback privacy notice (`/support/privacy.html` redirects there).
+- `/time-farm/policy/` contains the Time Farm privacy policy.
 
-Configure the deployed Apps Script `/exec` URL in `assets/config.js`. Until configured, the form offers email and cannot submit. See `../apps-script/README.md` for deployment, authorization and delivery semantics. No real email test has been performed.
+Per-app names and icons are in `assets/config.js`, colors in `assets/support.css`. App IDs must also be allowlisted in `../apps-script/Code.gs`.
+
+Configure the deployed Apps Script `/exec` URL in `assets/config.js`. Until configured, the form offers email and cannot submit. See `../apps-script/README.md` for deployment, authorization and delivery semantics.
