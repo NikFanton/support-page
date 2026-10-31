@@ -1,6 +1,8 @@
 # Shared app feedback — deployable package
 
-Prepared locally; **not deployed and no real email has been sent**.
+GitHub Pages is published from `main` → `/docs`. Apps Script version 1 is deployed as owner with anonymous access, and its `/exec` URL is configured in `docs/assets/config.js`.
+
+**No real test email has been sent; inbox delivery has not been verified.** The public endpoint's GET response was checked without sign-in.
 
 Canonical Pages URL after publishing this package in `NikFanton/support-page`:
 
@@ -15,7 +17,7 @@ Canonical Pages URL after publishing this package in `NikFanton/support-page`:
 2. In Project settings → Script properties, set **ALLOWED_ORIGINS** to exactly `https://nikfanton.github.io` (no repository path or trailing slash). Optional **DAILY_LIMIT** defaults to 30 and is capped at 50 across all apps. Add any future custom HTTPS origin as a comma-separated value.
 3. Deploy → New deployment → Web app, execute as **Me**, access **Anyone** (anonymous). The manifest records those intended settings; verify them in the deployment UI. This requires the owner to explicitly approve the new `script.send_mail` OAuth permission. The code does not request access to read Gmail, Drive or Sheets. Do not bypass a browser security warning or approve unexpected permissions.
 4. Copy the deployed URL ending in `/exec` into `docs/assets/config.js` → `feedbackEndpoint`. It is a public URL, not a secret. Use `/exec`, not the editor-only `/dev` URL.
-5. Publish the **contents** of `docs/` to the GitHub Pages repository. Preserve `support/`, `assets/` and `time-farm/` relative paths. The client stays disabled with an email fallback until an endpoint is configured.
+5. Set GitHub Pages to deploy from branch `main`, directory `/docs`. Preserve `support/`, `assets/` and `time-farm/` relative paths. The client stays disabled with an email fallback until an endpoint is configured.
 6. Open the public form in a signed-out browser. Check both app names, categories, responsive layout and optional email. Previewing does not send mail. Only perform a real submission after the owner authorizes a test email; verify arrival and the success acknowledgment. A successful local test is not proof of a deployed email flow.
 
 Adding another app requires updating both `FEEDBACK_APPS` in `Code.gs` and `apps` in `assets/config.js`, then redeploying the Apps Script version. Never accept arbitrary app names or recipients from a query string.

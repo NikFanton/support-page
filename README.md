@@ -8,3 +8,5 @@ GitHub Pages source: `main` / `docs`.
 Backend and deployment instructions: [apps-script/README.md](apps-script/README.md).
 
 Local checks: `node --test apps-script/feedback.test.cjs` (mail is stubbed).
+
+Pages and Apps Script are deployed; the form endpoint is configured. No real test email has been sent and inbox delivery has not been verified.
